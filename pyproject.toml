@@ -1,0 +1,13 @@
+[project]
+name = "django-airbnb-analyzer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Jay Cruz", email = "jcmcruz14@gmail.com" }
+]
+dependencies = [
+    "django>=5.1.4",
+    "pandas>=2.2.3",
+]
