@@ -1,2 +1,5 @@
 # Venv
 .venv
+
+# Private Files
+data/reservations*.csv
