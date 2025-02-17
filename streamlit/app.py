@@ -2,7 +2,6 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from obj.AirBnB import AirBnB
-from scripts.FileProcessor import process_file
 from scripts.graphs import make_twin_graph, make_histogram
 
 st.set_page_config(
