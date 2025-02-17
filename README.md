@@ -10,14 +10,14 @@ This is a personal project aimed to expand the initial reporting insights of a r
 #### Streamlit 
 1. TBD
 
+#### Switching versions
+`uv sync --extra <VERSION_NAME>`
+
+Based on the `pyproject.toml` configuration, the VERSION_NAME value may be equal to any of the listed dependency groups under optional dependencies.
+
 <hr />
 
 ### Version Log
-TBD
+1.0.0-streamlit
 
-#### Main Checklist
-- [ ] Can parse through multiple CSV files 
-- [ ] Can be returned as a records table OR as a series of graphs
-
-#### Sub-checklist
-- [ ] Possible to execute SQL queries
+Django TBD

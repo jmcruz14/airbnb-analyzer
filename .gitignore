@@ -3,3 +3,7 @@
 
 # Private Files
 data/reservations*.csv
+
+# Others
+**/__pycache__
+**/.ipynb_checkpoints
