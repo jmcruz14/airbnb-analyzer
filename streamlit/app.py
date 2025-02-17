@@ -177,8 +177,8 @@ def main():
       """)
 
     # dummy space
-    st.divider()
-    st.write("*This analyzer is an unofficial project by Jay. You may access the repo [here]()*")
+  st.divider()
+  st.write("*This analyzer is an unofficial project by Jay. You may access the repo [here](https://github.com/jmcruz14/airbnb-analyzer)*")
 
 
 

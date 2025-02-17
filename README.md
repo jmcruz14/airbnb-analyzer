@@ -7,8 +7,9 @@ This is a personal project aimed to expand the initial reporting insights of a r
 
 #### Django
 1. TBD
+
 #### Streamlit 
-1. TBD
+1. You may access the application via https://airbnb-analyzer.streamlit.app/.
 
 #### Switching versions
 `uv sync --extra <VERSION_NAME>`
