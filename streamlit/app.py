@@ -84,13 +84,25 @@ def main():
     # Performance Stats
     st.write("#### Performance Stats")
     performance_stats = st.session_state.bnb_report.get_performance_stats()
-    performance_col1, performance_col2, extra_col1, extra_col2 = st.columns(4)
+    graph_col, performance_col1, performance_col2 = st.columns([2,1,1])
     with performance_col1:
       with st.container(border=True):
         st.metric(label="Total Nights", value='{:.0f}'.format(performance_stats.get('total_nights')))
     with performance_col2:
       with st.container(border=True):
         st.metric(label="Average Nights", value='{:.0f}'.format(performance_stats.get('average_nights')))
+    # graph_col, extra_col2 = st.columns([2,2])
+    with graph_col:
+      bnb_df = st.session_state.bnb_report.df
+      nights_reserved_dist = make_histogram(
+        bnb_df,
+        'Nights',
+        'count',
+        [1,2,3,4,5,6,7,8,9,10, float('inf')],
+        bar_title="Nights Reserved",
+        xlabel="Nights"
+      )
+      st.pyplot(nights_reserved_dist.get_figure())
 
     # Listing Stats
     st.write('#### Listing Stats')
