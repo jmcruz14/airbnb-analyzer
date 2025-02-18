@@ -15,7 +15,7 @@ class AirBnB:
       adjustments = 0 # columns to be decided
       service_fees = df['Service fee'].sum()
       tax_withheld = df['Occupancy taxes'].sum()
-      total = gross_earnings + adjustments + service_fees + tax_withheld
+      total = gross_earnings + adjustments - service_fees - tax_withheld
 
       return {
         'gross_earnings': gross_earnings,
