@@ -1,7 +1,11 @@
+import os
+os.sys.path.insert(0, os.getcwd())
+
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from obj.AirBnB import AirBnB
+from api.AirBnB import AirBnB
+from scripts.process_file import process_airbnb_file
 from scripts.graphs import make_twin_graph, make_histogram
 
 st.set_page_config(
@@ -48,7 +52,7 @@ def main():
       try:
         # Create an instance of AirBnB class
         bnb = AirBnB(pd.DataFrame())
-        st.session_state['bnb_report'] = AirBnB(bnb.process_file(file_upload))
+        st.session_state['bnb_report'] = AirBnB(process_airbnb_file(file_upload))
       except Exception as e:
           st.error(f"Error processing file: {str(e)}")
 
@@ -68,125 +72,142 @@ def main():
     st.write("#### Earnings Summary")
 
     # Basic Earnings
-    basic_earnings = st.session_state.bnb_report.get_basic_earnings()
-    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
-    with summary_col1:
-      with st.container(border=True):
-        st.metric(label="Gross earnings", value='Php {:,.0f}'.format(basic_earnings.get('gross_earnings')))
-    with summary_col2:
-      with st.container(border=True):
-        st.metric(label="Service fees", value='Php {:,.0f}'.format(basic_earnings.get('service_fees')))
-    with summary_col3:
-      total_container = st.container(border=True, key='earnings-total-summary')
-      with total_container:
-        st.metric(label="Total", value='Php {:,.0f}'.format(basic_earnings.get('total')))
-    
+    try:
+      basic_earnings = st.session_state.bnb_report.get_basic_earnings()
+      summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+      with summary_col1:
+        with st.container(border=True):
+          st.metric(label="Gross earnings", value='Php {:,.0f}'.format(basic_earnings.get('gross_earnings')))
+      with summary_col2:
+        with st.container(border=True):
+          st.metric(label="Service fees", value='Php {:,.0f}'.format(basic_earnings.get('service_fees')))
+      with summary_col3:
+        total_container = st.container(border=True, key='earnings-total-summary')
+        with total_container:
+          st.metric(label="Total", value='Php {:,.0f}'.format(basic_earnings.get('total')))
+    except Exception as e:
+      st.error(f"Error processing basic report: {e}")
+
     # Performance Stats
     st.write("#### Performance Stats")
-    performance_stats = st.session_state.bnb_report.get_performance_stats()
-    graph_col, performance_col1, performance_col2 = st.columns([2,1,1])
-    with performance_col1:
-      with st.container(border=True):
-        st.metric(label="Total Nights", value='{:.0f}'.format(performance_stats.get('total_nights')))
-    with performance_col2:
-      with st.container(border=True):
-        st.metric(label="Average Nights", value='{:.0f}'.format(performance_stats.get('average_nights')))
-    # graph_col, extra_col2 = st.columns([2,2])
-    with graph_col:
-      bnb_df = st.session_state.bnb_report.df
-      nights_reserved_dist = make_histogram(
-        bnb_df,
-        'Nights',
-        'count',
-        [1,2,3,4,5,6,7,8,9,10, float('inf')],
-        bar_title="Nights Reserved",
-        xlabel="Nights"
-      )
-      st.pyplot(nights_reserved_dist.get_figure())
+
+    try:
+      performance_stats = st.session_state.bnb_report.get_performance_stats()
+      graph_col, performance_col1, performance_col2 = st.columns([2,1,1])
+      with performance_col1:
+        with st.container(border=True):
+          st.metric(label="Total Nights", value='{:.0f}'.format(performance_stats.get('total_nights')))
+      with performance_col2:
+        with st.container(border=True):
+          st.metric(label="Average Nights", value='{:.0f}'.format(performance_stats.get('average_nights')))
+      # graph_col, extra_col2 = st.columns([2,2])
+      with graph_col:
+        bnb_df = st.session_state.bnb_report.df
+        nights_reserved_dist = make_histogram(
+          bnb_df,
+          'Nights',
+          'count',
+          [1,2,3,4,5,6,7,8,9,10, float('inf')],
+          bar_title="Nights Reserved",
+          xlabel="Nights"
+        )
+        st.pyplot(nights_reserved_dist.get_figure())
+    except Exception as e:
+      st.error(f"Error processing performance stats: {e}")
 
     # Listing Stats
     st.write('#### Listing Stats')
-    listing_df = st.session_state.bnb_report.get_listing_stats()
-    st.write("**Fiscal report**")
-    fiscal_listing_df = listing_df[['Amount_sum', 'Service fee_sum']]
-    fiscal_listing_df['Total'] = fiscal_listing_df['Amount_sum'] - fiscal_listing_df['Service fee_sum']
-    fiscal_listing_df.columns = ['Gross earnings', 'Service fees', 'Total']
-    for col in fiscal_listing_df.columns:
-      fiscal_listing_df[col] = fiscal_listing_df[col].apply(lambda x: "Php {:,.2f}".format(x))
-    st.table(
-      fiscal_listing_df
-    )
-
-    st.write("**Performance**")
-    customer_night_df = listing_df[['Nights_sum', 'Nights_mean', 'Nights_max', 'Guest_nunique', 'Guest_count']]
-    customer_night_df['Nights_sum'] = customer_night_df['Nights_sum'].astype(int)
-    customer_night_df['Nights_max'] = customer_night_df['Nights_max'].astype(int)
-    customer_night_df.columns = ['Total Nights', 'Average Nights', 'Maximum Nights Stay', 'Unique Guest Bookings', 'Total Guests']
-    st.table(customer_night_df.style.format({
-      'Average Nights': '{:.2f}'
-    }))
-
-    st.write("#### Customers")
-    earnings_df = st.session_state.bnb_report.get_customer_stats(top_customers=5)
-    earnings_df['Total Nights'] = earnings_df['Total Nights'].astype(int) 
-    edf_1 = earnings_df.style.format({
-      'Total Gross Earnings': 'Php {:,.2f}',
-      'Average Earnings per Booking': 'Php {:,.2f}'
-    })
-
-    earnings_customers_df = earnings_df.reset_index()
-
-    cust_col1, cust_col2 = st.columns(2)
-    with cust_col1:
-      customers_fig = make_twin_graph(
-        earnings_customers_df, 
-        'Guest', 
-        'Total Gross Earnings', 
-        'Total Nights',
-        y1_color='#404040'
+    
+    try:
+      listing_df = st.session_state.bnb_report.get_listing_stats()
+      st.write("**Fiscal report**")
+      fiscal_listing_df = listing_df[['Amount_sum', 'Service fee_sum']]
+      fiscal_listing_df['Total'] = fiscal_listing_df['Amount_sum'] - fiscal_listing_df['Service fee_sum']
+      fiscal_listing_df.columns = ['Gross earnings', 'Service fees', 'Total']
+      for col in fiscal_listing_df.columns:
+        fiscal_listing_df[col] = fiscal_listing_df[col].apply(lambda x: "Php {:,.2f}".format(x))
+      st.table(
+        fiscal_listing_df
       )
-      st.pyplot(customers_fig)
-      plt.clf()
-    with cust_col2:
-      st.table(edf_1)
 
-    st.write('#### Booking Distributions')
-    bookings_df = st.session_state.bnb_report.get_booking_stats()
-    bookings_bins = [0,5,10,15,20,25,30,35,40,45,50, float('inf')]
-    bins_labels=['0-5', '6-10', '11-15', '16-20', '21-25', '26-30', '31-35', '36-40', '41-45', '45-50', '50>']
-    bookings_col1, bookings_col2 = st.columns(2)
-    with bookings_col1:
-      cust_fig = make_histogram(
-        bookings_df, 
-        'booking_to_date', 
-        'count', 
-        bookings_bins,
-        bar_title="Booking-to-date distribution",
-        xlabel="Booking-to-date"
-      )
-      st.pyplot(cust_fig.get_figure())
-    with bookings_col2:
-      st.write("##### Findings")
-      binned_btd = pd.cut(bookings_df['booking_to_date'], bookings_bins, labels=bins_labels, include_lowest=True)
-      # st.table(binned_btd.value_counts(sort=False).reset_index())
-      binned_btd = binned_btd.value_counts(sort=False).reset_index()
+      st.write("**Performance**")
+      customer_night_df = listing_df[['Nights_sum', 'Nights_mean', 'Nights_max', 'Guest_nunique', 'Guest_count']]
+      customer_night_df['Nights_sum'] = customer_night_df['Nights_sum'].astype(int)
+      customer_night_df['Nights_max'] = customer_night_df['Nights_max'].astype(int)
+      customer_night_df.columns = ['Total Nights', 'Average Nights', 'Maximum Nights Stay', 'Unique Guest Bookings', 'Total Guests']
+      st.table(customer_night_df.style.format({
+        'Average Nights': '{:.2f}'
+      }))
+    except Exception as e:
+      st.error(f"Error processing listing statistics: {e}")
 
-      # Find all ranges with maximum frequency
-      max_freq = binned_btd['count'].max()
-      max_freq_ranges = binned_btd[binned_btd['count'] == max_freq]['booking_to_date'].tolist()
-      
-      # Find all ranges with minimum frequency
-      min_freq = binned_btd['count'].min()
-      min_freq_ranges = binned_btd[binned_btd['count'] == min_freq]['booking_to_date'].tolist()
-      
-      # Format the ranges for display
-      max_ranges_str = " and ".join(max_freq_ranges) if len(max_freq_ranges) <= 2 else ", ".join(max_freq_ranges[:-1]) + f", and {max_freq_ranges[-1]}"
-      min_ranges_str = " and ".join(min_freq_ranges) if len(min_freq_ranges) <= 2 else ", ".join(min_freq_ranges[:-1]) + f", and {min_freq_ranges[-1]}"
+      st.write("#### Customers")
+    try:
+      earnings_df = st.session_state.bnb_report.get_customer_stats(top_customers=5)
+      earnings_df['Total Nights'] = earnings_df['Total Nights'].astype(int) 
+      edf_1 = earnings_df.style.format({
+        'Total Gross Earnings': 'Php {:,.2f}',
+        'Average Earnings per Booking': 'Php {:,.2f}'
+      })
 
-      st.write(f"""
-          - Most bookings occur **{max_ranges_str} days** away from the booking with **{max_freq} bookings** each
-          - Fewest bookings occur **{min_ranges_str} days** away from the booking with **{min_freq} bookings** each
-      """)
+      earnings_customers_df = earnings_df.reset_index()
+
+      cust_col1, cust_col2 = st.columns(2)
+      with cust_col1:
+        customers_fig = make_twin_graph(
+          earnings_customers_df, 
+          'Guest', 
+          'Total Gross Earnings', 
+          'Total Nights',
+          y1_color='#404040'
+        )
+        st.pyplot(customers_fig)
+        plt.clf()
+      with cust_col2:
+        st.table(edf_1) 
+    except Exception as e:
+      st.error(f"Error processing customer statistics: {e}")
+
+      st.write('#### Booking Distributions')
+    try:
+      bookings_df = st.session_state.bnb_report.get_booking_stats()
+      bookings_bins = [0,5,10,15,20,25,30,35,40,45,50, float('inf')]
+      bins_labels=['0-5', '6-10', '11-15', '16-20', '21-25', '26-30', '31-35', '36-40', '41-45', '45-50', '50>']
+      bookings_col1, bookings_col2 = st.columns(2)
+      with bookings_col1:
+        cust_fig = make_histogram(
+          bookings_df, 
+          'booking_to_date', 
+          'count', 
+          bookings_bins,
+          bar_title="Booking-to-date distribution",
+          xlabel="Booking-to-date"
+        )
+        st.pyplot(cust_fig.get_figure())
+      with bookings_col2:
+        st.write("##### Findings")
+        binned_btd = pd.cut(bookings_df['booking_to_date'], bookings_bins, labels=bins_labels, include_lowest=True)
+        # st.table(binned_btd.value_counts(sort=False).reset_index())
+        binned_btd = binned_btd.value_counts(sort=False).reset_index()
+
+        # Find all ranges with maximum frequency
+        max_freq = binned_btd['count'].max()
+        max_freq_ranges = binned_btd[binned_btd['count'] == max_freq]['booking_to_date'].tolist()
+        
+        # Find all ranges with minimum frequency
+        min_freq = binned_btd['count'].min()
+        min_freq_ranges = binned_btd[binned_btd['count'] == min_freq]['booking_to_date'].tolist()
+        
+        # Format the ranges for display
+        max_ranges_str = " and ".join(max_freq_ranges) if len(max_freq_ranges) <= 2 else ", ".join(max_freq_ranges[:-1]) + f", and {max_freq_ranges[-1]}"
+        min_ranges_str = " and ".join(min_freq_ranges) if len(min_freq_ranges) <= 2 else ", ".join(min_freq_ranges[:-1]) + f", and {min_freq_ranges[-1]}"
+
+        st.write(f"""
+            - Most bookings occur **{max_ranges_str} days** away from the booking with **{max_freq} bookings** each
+            - Fewest bookings occur **{min_ranges_str} days** away from the booking with **{min_freq} bookings** each
+        """)
+    except Exception as e:
+      st.error(f"Error processing bookings report: {e}")
 
     # dummy space
   st.divider()
