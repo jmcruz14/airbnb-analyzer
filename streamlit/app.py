@@ -43,7 +43,7 @@ def main():
     2. Place the extracted report in the file uploader below and click 'Accept'.
   """, icon="ℹ️")
 
-  file_upload = st.file_uploader("Upload file here", accept_multiple_files=False)
+  file_upload = st.file_uploader("Upload file here", accept_multiple_files=False, type='csv')
   process_button = st.button("Process", type="primary", disabled=not file_upload)
     
   # Create a separate button without on_click
