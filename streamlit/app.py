@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from api.AirBnB import AirBnB
-from scripts.process_file import process_airbnb_file
+from scripts.process_file import process_airbnb_file, process_dummy_file
 from scripts.graphs import make_twin_graph, make_histogram
 
 st.set_page_config(
@@ -44,7 +44,12 @@ def main():
   """, icon="ℹ️")
 
   file_upload = st.file_uploader("Upload file here", accept_multiple_files=False, type='csv')
-  process_button = st.button("Process", type="primary", disabled=not file_upload)
+  process_col, preview_col, extra_col1 = st.columns([1,1,5])
+  with process_col:
+    process_button = st.button("Process", type="primary", disabled=not file_upload)
+  with preview_col:
+    preview_button = st.button("Preview", type="secondary", 
+      help="Show output with a dummy dataset.")
     
   # Create a separate button without on_click
   if file_upload is not None:
@@ -55,6 +60,15 @@ def main():
         st.session_state['bnb_report'] = AirBnB(process_airbnb_file(file_upload))
       except Exception as e:
           st.error(f"Error processing file: {str(e)}")
+  
+  if preview_button:
+    try:
+      # Create an instance of AirBnB class
+      bnb = AirBnB(pd.DataFrame())
+      st.session_state['bnb_report'] = AirBnB(process_dummy_file())
+    except Exception as e:
+        st.error(f"Error processing file: {str(e)}")
+
 
   with st.expander('**Advanced options**', False):
     # Filter section
