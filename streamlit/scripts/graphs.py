@@ -14,6 +14,7 @@ def make_twin_graph(
   bar_width = 0.3,
   # title
 ) -> plt.figure:
+  plt.clf()
   fig, ax1 = plt.subplots(figsize=(12,12))
 
   # Set bar width and positions
@@ -61,6 +62,7 @@ def make_histogram(
   bar_color: str = 'black'
 ):
   try:
+    plt.clf()
     # fig, ax = plt.subplots()
     g = sns.histplot(bnb_df[x], stat=stat_y, bins=bins, color=bar_color)
     g.set_title(bar_title)
