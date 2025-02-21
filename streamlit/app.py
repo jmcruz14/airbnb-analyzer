@@ -66,6 +66,7 @@ def main():
       - Specific filters for
         - Customers (top customers limit)
     """)
+    top_customers_limit = st.number_input("Top performing customers", 1, 99, 10, 1)
 
   if 'bnb_report' in st.session_state and st.session_state.bnb_report.length is not None:
     st.divider()
@@ -143,7 +144,7 @@ def main():
 
       st.write("#### Customers")
     try:
-      earnings_df = st.session_state.bnb_report.get_customer_stats(top_customers=5)
+      earnings_df = st.session_state.bnb_report.get_customer_stats(top_customers=top_customers_limit)
       earnings_df['Total Nights'] = earnings_df['Total Nights'].astype(int) 
       edf_1 = earnings_df.style.format({
         'Total Gross Earnings': 'Php {:,.2f}',
@@ -205,6 +206,7 @@ def main():
         st.write(f"""
             - Most bookings occur **{max_ranges_str} days** away from the booking with **{max_freq} bookings** each
             - Fewest bookings occur **{min_ranges_str} days** away from the booking with **{min_freq} bookings** each
+            - On average, customers book **{"{:.2f}".format(bookings_df['booking_to_date'].mean())} days** away from the actual booking.
         """)
     except Exception as e:
       st.error(f"Error processing bookings report: {e}")
