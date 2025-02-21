@@ -186,42 +186,42 @@ class AirBnB:
     except Exception as e:
       raise DataFrameError(f"Error calculating booking stats: {str(e)}")
 
-  @staticmethod
-  def process_file(file) -> pd.DataFrame:
-    try:
-        # Check if file has a valid CSV extension
-        if not file.name.endswith('.csv'):
-            st.error('Please upload a CSV file')
-            return pd.DataFrame()
+  # @staticmethod
+  # def process_file(file) -> pd.DataFrame:
+  #   try:
+  #       # Check if file has a valid CSV extension
+  #       if not file.name.endswith('.csv'):
+  #           st.error('Please upload a CSV file')
+  #           return pd.DataFrame()
             
-        # Read the file directly - no need for getvalue() since pd.read_csv can handle BytesIO objects
-        bnb_df = pd.read_csv(
-            file, 
-            parse_dates=['Date', 'Arriving by date', 'Booking date', 'Start date', 'Earnings year']
-        )
+  #       # Read the file directly - no need for getvalue() since pd.read_csv can handle BytesIO objects
+  #       bnb_df = pd.read_csv(
+  #           file, 
+  #           parse_dates=['Date', 'Arriving by date', 'Booking date', 'Start date', 'Earnings year']
+  #       )
         
-        # Basic validation of required columns
-        required_columns = ['Date', 'Arriving by date', 'Booking date', 'Start date', 'Earnings year', 'Type']
-        missing_columns = [col for col in required_columns if col not in bnb_df.columns]
+  #       # Basic validation of required columns
+  #       required_columns = ['Date', 'Arriving by date', 'Booking date', 'Start date', 'Earnings year', 'Type']
+  #       missing_columns = [col for col in required_columns if col not in bnb_df.columns]
         
-        if missing_columns:
-          st.error(f'CSV file is missing required columns: {", ".join(missing_columns)}')
-          return pd.DataFrame()
+  #       if missing_columns:
+  #         st.error(f'CSV file is missing required columns: {", ".join(missing_columns)}')
+  #         return pd.DataFrame()
             
-        # Process the data
-        bnb_df['Earnings year'] = bnb_df['Earnings year'].dt.year
-        reservations_bnb = bnb_df[bnb_df['Type'] == 'Reservation']
+  #       # Process the data
+  #       bnb_df['Earnings year'] = bnb_df['Earnings year'].dt.year
+  #       reservations_bnb = bnb_df[bnb_df['Type'] == 'Reservation']
         
-        # Update session state and display
-        st.session_state['bnb_report'] = reservations_bnb
-        return reservations_bnb
+  #       # Update session state and display
+  #       st.session_state['bnb_report'] = reservations_bnb
+  #       return reservations_bnb
         
-    except pd.errors.EmptyDataError:
-        st.error('The uploaded CSV file is empty')
-        return pd.DataFrame()
-    except pd.errors.ParserError:
-        st.error('Unable to parse the CSV file. Please ensure it is properly formatted')
-        return pd.DataFrame()
-    except Exception as e:
-        st.error(f'An error occurred while processing the file: {str(e)}')
-        return pd.DataFrame()
+  #   except pd.errors.EmptyDataError:
+  #       st.error('The uploaded CSV file is empty')
+  #       return pd.DataFrame()
+  #   except pd.errors.ParserError:
+  #       st.error('Unable to parse the CSV file. Please ensure it is properly formatted')
+  #       return pd.DataFrame()
+  #   except Exception as e:
+  #       st.error(f'An error occurred while processing the file: {str(e)}')
+  #       return pd.DataFrame()
